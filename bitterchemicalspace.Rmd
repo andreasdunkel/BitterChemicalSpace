@@ -1,0 +1,168 @@
+---
+title: "Chemical space covered by bitter tastants, food derived compounds and drug compounds"
+subtitle: "Supplementary figures to Dunkel, Hofmann and Di Pizio (2020): In-silico investigation of bitter hop-derived compounds and their cognate bitter taste receptors"
+  
+output:
+  html_document:
+      toc: true
+      theme: united
+      toc_float: true
+---
+
+
+
+```{r include = FALSE}
+knitr::opts_chunk$set(echo=FALSE)
+```
+
+```{r load packages,warning=FALSE, message=FALSE }
+library(here)
+library(tidyverse)
+library(cowplot)
+library(ggrepel)
+library(RColorBrewer)
+library(plotly)
+library(kableExtra)
+library(DT)
+library(ggforce)
+library(stringi)
+
+theme_set(theme_cowplot())
+```
+
+```{r}
+
+daten <- read.csv(here("data", "daten_plot4_neu.csv"), dec = ".", sep = ",", header = TRUE)
+daten2 <- daten %>%
+          distinct(isomeriSmiles, .keep_all = TRUE)
+
+daten2$superclass2 <- ordered(daten2$superclass2, levels = c("Others", "Phenylpropanoids and polyketides", "Organosulfur compounds", "Organoheterocyclic compounds", 
+                                                             "Organic oxygen compounds", "Organic nitrogen compounds", "Organic acids and derivatives", 
+                                                             "Lipids and lipid-like molecules", "Benzenoids", "Alkaloids and derivatives")) 
+```
+
+# Chemical space of bitter tastants
+
+### t-SNE plot of the bitter chemical space, coloured according FooDB and DrugBank co-occurrence
+
+```{r, fig.width=12, fig.height=12}
+p <- plot_ly(daten2, x = ~X1, y = ~X2, z = ~X3, color = ~group.y,
+             colors = c("#ECE471",   "#ED7F85", "#C0D4A4",  "#BD899F")) %>%
+  add_markers(marker = list(size = 5, opacity = 1), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(IUPACName, width = 40),
+                            '<br> PubChem CID: ', cid2,
+                            '<br> Database: ', group.y
+                            )) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                      yaxis = list(title = 'tSNE2'),
+                      zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+
+
+
+
+
+### t-SNE plot of the bitter chemical space, coloured according to ClassyFire chemical superclasses
+
+```{r, fig.width=12, fig.height=12}
+p <- plot_ly(daten2, x = ~X1, y = ~X2, z = ~X3, color = ~superclass2, 
+             colors = c("grey79", "#b15928", "#6a3d9a", "#cab2d6", "#ff7f00", "#e31a1c", "#33a02c", "#1f78b4", "#b2df8a", "#a6cee3")) %>%
+              add_markers(marker = list(size = 5, opacity = 1), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(IUPACName, width = 40),
+                            '<br> PubChem CID: ', cid2,
+                            '<br> Superclass: ', superclass2,
+                            '<br> Class: ', class,
+                            '<br> Subclass: ', subclass)) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                      yaxis = list(title = 'tSNE2'),
+                      zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+
+
+### t-SNE plot of the bitter (in yellow) chemical space, hop-derived compounds 1-11 are coloured in black
+
+```{r, fig.width=12, fig.height=12}
+p <- plot_ly(daten2, x = ~X1, y = ~X2, z = ~X3, color = ~group.x,
+             colors = c("#ECE471", "black")) %>%
+  add_markers(marker = list(size = 5, opacity = 1), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(IUPACName, width = 40),
+                            '<br> PubChem CID: ', cid2,
+                            '<br> Hop compound nr.: ', label)) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                      yaxis = list(title = 'tSNE2'),
+                      zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+# Chemical space of FooDB, BitterDB and DrugBank
+
+
+```{r}
+data <- read.delim(here("data", "export_tsne.txt"), sep = "\t", header = TRUE, stringsAsFactors=FALSE, quote="")
+```
+
+
+
+### t-SNE plot of FooDB, BitterDB and DrugBank, coloured according to database occurrence
+
+```{r, warning=FALSE, fig.width=12, fig.height=12}
+p <- plot_ly(data, x = ~t.SNE.X.4, y = ~t.SNE.Y.4, z = ~t.SNE.Z.4, color = ~group, colors = "Set1") %>%
+  add_markers(marker = list(size = 2, opacity = 0.5), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(name, width = 40),
+                            '<br> Database: ', group)) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                     yaxis = list(title = 'tSNE2'),
+                     zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+
+### t-SNE plot of FooDB, BitterDB and DrugBank, coloured according to ClassyFire chemical superclasses
+
+```{r, fig.width=12, fig.height=12, warning=FALSE}
+p <- plot_ly(data, x = ~t.SNE.X.4, y = ~t.SNE.Y.4, z = ~t.SNE.Z.4, color = ~superclass) %>%
+  add_markers(marker = list(size = 2, opacity = 0.5), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(name, width = 40),
+                            '<br> Superclass: ', superclass,
+                            '<br> Class: ', class,
+                            '<br> Subclass: ', subclass)) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                     yaxis = list(title = 'tSNE2'),
+                     zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+
+
+### t-SNE plot of FooDB, BitterDB and DrugBank highlighting hop-derived compounds 1-11
+
+```{r, warning=FALSE, message=FALSE, fig.width=12, fig.height=12}
+hop <- daten2 %>%
+       filter(group.x == "hop-derived bitter compounds") %>%
+       select(InChIKey, label, group.x)
+
+data2 <- left_join(data, hop, by = "InChIKey")
+data2$group.x[is.na(data2$group.x)] <- "bitter compounds"
+
+p <- plot_ly(data2, x = ~t.SNE.X.4, y = ~t.SNE.Y.4, z = ~t.SNE.Z.4, color = ~group.x,
+             colors = c("#ECE471", "black")) %>%
+  add_markers(marker = list(size = 2, opacity = 0.5), hoverinfo = "text",
+              text = ~paste("Compound Name: ", str_wrap(name, width = 40),
+                            '<br> Hop compound nr.: ', label)) %>%
+  layout(scene = list(xaxis = list(title = 'tSNE1'),
+                     yaxis = list(title = 'tSNE2'),
+                     zaxis = list(title = 'tSNE3')),
+         legend = list(itemsizing = "constant"))
+p
+```
+
+
